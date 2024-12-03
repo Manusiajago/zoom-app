@@ -7,6 +7,8 @@ import MeetingModal from './MeetingModal';
 import { useUser } from '@clerk/nextjs';
 import { Call, useStreamVideoClient } from '@stream-io/video-react-sdk';
 // import { Description } from '@radix-ui/react-dialog';
+import { useToast } from './ui/use-toast';
+
 
 const MeetingTypeList = () => {
     const router = useRouter();
@@ -20,11 +22,19 @@ const MeetingTypeList = () => {
     })
 
     const [callDetails, setCallDetails] = useState<Call>()
+    const { toast } = useToast()
 
     const createMeeting = async () => {
         if (!client || !user) return;
 
         try {
+            if (!values.dateTime) {
+                toast({
+                    title: "Please select a date and time"
+                })
+                return;
+            }
+
             const id = crypto.randomUUID();
             const call = client.call('default', id);
 
@@ -41,16 +51,24 @@ const MeetingTypeList = () => {
                     }
                 },
             })
-
+            // sudah mendapatkan generate id
             setCallDetails(call);
 
             if (!values.description) {
                 router.push(`/meeting/${call.id}`);
             }
+            toast({
+                title: "Meeting created",
+
+            })
 
 
         } catch (error) {
             console.log(error);
+            toast({
+                title: "Failed to create meeting"
+
+            })
         }
     };
 
